@@ -3,7 +3,8 @@
 class TodoApp extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {items: [], text: ''};
+        var temp = window.data.slice();
+        this.state = {items: temp, text: ''};
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
@@ -53,23 +54,51 @@ class TodoApp extends React.Component {
         if (!this.state.text.length) {
             return;
         }
+        $.ajax({
+            type: 'POST',
+            url: 'http://192.168.3.107:8080/item',
+            crossDomain: true,
+            dataType: 'json',
+            data: {
+                title: this.state.text,
+                done: 0,
+                user: "Overlord"
+            },
+
+            error: function (data) {
+                console.log(data);
+            },
+        }).done((data) => {
+            this.setState(state => ({
+                items: data,
+                text: ''
+            }));
+        });
+
         const newItem = {
-            text: this.state.text,
-            id: Date.now()
+            title: this.state.text,
+            done: 0,
+            user: "Overlord"
         };
-        this.setState(state => ({
-            items: state.items.concat(newItem), // a=a+"naujas"
-            text: ''
-        }));
+
+
     }
 
     handleDelete(item) {
-        var items = this.state.items;
-        var index = items.indexOf(item);
-        items.splice(index, 1);
-        this.state.items = items;
-        this.setState(state => ({
-            items: state.items
-        }));
+        $.ajax({
+            type: 'DELETE',
+            url: 'http://192.168.3.107:8080/item/' + item.id,
+            crossDomain: true,
+            dataType: 'json',
+            error: function (data) {
+                console.log(data);
+            },
+        }).done((data) => {
+            this.setState(state => ({
+                items: data,
+                text: ''
+            }));
+        });
     }
 }
+
